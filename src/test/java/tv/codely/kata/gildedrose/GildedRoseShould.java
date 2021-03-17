@@ -1,122 +1,160 @@
 package tv.codely.kata.gildedrose;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 import org.junit.jupiter.api.Test;
 
-public class GildedRoseShould {
-    private Item[] arrayWith(Item item) {
-        return new Item[]{item};
-    }
+import java.util.HashMap;
+import java.util.Map;
 
-    @Test
-    public void testThatSellInValueIsDecreased() {
-        Item whateverItem = new Item("whatever", 10, 0);
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-        GildedRose gildedRose = new GildedRose(arrayWith(whateverItem));
-        gildedRose.updateQuality();
+class GildedRoseShould {
 
-        assertEquals(whateverItem.sellIn, 9);
-    }
+	private static final ItemName AGED_BRIE = new ItemName("Aged Brie");
+	private static final ItemName BACKSTAGE_PASSES_TO_A_TAFKA_L80ETC_CONCERT = new ItemName("Backstage passes to a TAFKAL80ETC concert");
+	private static final ItemName SULFURAS_HAND_OF_RAGNAROS = new ItemName("Sulfuras, Hand of Ragnaros");
+	private static final ItemName CONJURED_MANA_CAKE = new ItemName("Conjured Mana Cake");
 
-    @Test
-    public void testThatQualityValueIsDecreased() {
-        Item whateverItem = new Item("whatever", 1, 10);
+	private ItemTypeFactory createItemTypeFactory() {
+		final Map<ItemName, ItemType> itemTypes = new HashMap<>();
+		itemTypes.put(GildedRoseShould.AGED_BRIE, new AgedBrie());
+		itemTypes.put(GildedRoseShould.BACKSTAGE_PASSES_TO_A_TAFKA_L80ETC_CONCERT, new BackstageEntrance());
+		itemTypes.put(GildedRoseShould.SULFURAS_HAND_OF_RAGNAROS, new InmutableItem());
+		itemTypes.put(GildedRoseShould.CONJURED_MANA_CAKE, new ConjuredItem());
+		return new ItemTypeFactory(itemTypes);
+	}
 
-        GildedRose gildedRose = new GildedRose(arrayWith(whateverItem));
-        gildedRose.updateQuality();
+	private Item[] arrayWith(final Item item) {
+		return new Item[]{item};
+	}
 
-        assertEquals(whateverItem.quality, 9);
-    }
+	@Test
+	void testThatSellInValueIsDecreased() {
+		final Item whateverItem = new Item("whatever", 10, 0);
 
-    @Test
-    public void testThatQualityDecreasesTwiceAsMuchWhenSellByIsPassed() {
-        Item whateverItem = new Item("whatever", 0, 10);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(whateverItem));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(whateverItem));
-        gildedRose.updateQuality();
+		assertEquals(9, whateverItem.sellIn);
+	}
 
-        assertEquals(whateverItem.quality, 8);
-    }
+	@Test
+	void testThatQualityValueIsDecreased() {
+		final Item whateverItem = new Item("whatever", 1, 10);
 
-    @Test
-    public void testThatQualityIsNeverNegative() {
-        Item whateverItem = new Item("whatever", 0, 0);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(whateverItem));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(whateverItem));
-        gildedRose.updateQuality();
+		assertEquals(9, whateverItem.quality);
+	}
 
-        assertEquals(whateverItem.quality, 0);
-    }
+	@Test
+	void testThatQualityDecreasesTwiceAsMuchWhenSellByIsPassed() {
+		final Item whateverItem = new Item("whatever", 0, 10);
 
-    @Test
-    public void testAgedBrieIncreasesQualityWithAge() {
-        Item agedBrie = new Item("Aged Brie", 5, 1);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(whateverItem));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(agedBrie));
-        gildedRose.updateQuality();
+		assertEquals(8, whateverItem.quality);
+	}
 
-        assertEquals(agedBrie.quality, 2);
-    }
+	@Test
+	void testThatQualityIsNeverNegative() {
+		final Item whateverItem = new Item("whatever", 0, 0);
 
-    @Test
-    public void testQualityNeverIncreasesPastFifty() {
-        Item agedBrie = new Item("Aged Brie", 5, 50);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(whateverItem));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(agedBrie));
-        gildedRose.updateQuality();
+		assertEquals(0, whateverItem.quality);
+	}
 
-        assertEquals(agedBrie.quality, 50);
-    }
+	@Test
+	void testAgedBrieIncreasesQualityWithAge() {
+		final Item agedBrie = new Item("Aged Brie", 5, 1);
 
-    @Test
-    public void testSulfurasNeverChanges() {
-        Item sulfuras = new Item("Sulfuras, Hand of Ragnaros", 0, 25);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(agedBrie));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(sulfuras));
-        gildedRose.updateQuality();
+		assertEquals(2, agedBrie.quality);
+	}
 
-        assertEquals(sulfuras.quality, 25);
-        assertEquals(sulfuras.sellIn, 0);
-    }
+	@Test
+	void testConjuredManaCakeDecreasesQualityDoubleThanNormal() {
+		final Item conjuredManaCake = new Item("Conjured Mana Cake", 5, 2);
 
-    @Test
-    public void testBackstagePassIncreasesQualityByOneIfSellByGreaterThenTen() {
-        Item backstagePasses = new Item("Backstage passes to a TAFKAL80ETC concert", 11, 20);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(conjuredManaCake));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(backstagePasses));
-        gildedRose.updateQuality();
+		assertEquals(0, conjuredManaCake.quality);
+	}
 
-        assertEquals(backstagePasses.quality, 21);
-    }
+	@Test
+	void testConjuredManaCakeDecreasesQualityDoubleThanNormalWhenOutOfSaleDateRecommended() {
+		final Item conjuredManaCake = new Item("Conjured Mana Cake", 0, 6);
 
-    @Test
-    public void testBackstagePassIncreasesQualityByTwoIfSellBySmallerThanTen() {
-        Item backstagePasses = new Item("Backstage passes to a TAFKAL80ETC concert", 6, 20);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(conjuredManaCake));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(backstagePasses));
-        gildedRose.updateQuality();
+		assertEquals(2, conjuredManaCake.quality);
+	}
 
-        assertEquals(backstagePasses.quality, 22);
-    }
+	@Test
+	void testQualityNeverIncreasesPastFifty() {
+		final Item agedBrie = new Item("Aged Brie", 5, 50);
 
-    @Test
-    public void testBackstagePassIncreasesQualityByThreeIfSellBySmallerThanFive() {
-        Item backstagePasses = new Item("Backstage passes to a TAFKAL80ETC concert", 5, 20);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(agedBrie));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(backstagePasses));
-        gildedRose.updateQuality();
+		assertEquals(50, agedBrie.quality);
+	}
 
-        assertEquals(backstagePasses.quality, 23);
-    }
+	@Test
+	void testSulfurasNeverChanges() {
+		final Item sulfuras = new Item("Sulfuras, Hand of Ragnaros", 0, 25);
 
-    @Test
-    public void testBackstagePassLosesValueAfterSellByPasses() {
-        Item backstagePasses = new Item("Backstage passes to a TAFKAL80ETC concert", 0, 20);
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(sulfuras));
 
-        GildedRose gildedRose = new GildedRose(arrayWith(backstagePasses));
-        gildedRose.updateQuality();
+		assertEquals(25, sulfuras.quality);
+		assertEquals(0, sulfuras.sellIn);
+	}
 
-        assertEquals(backstagePasses.quality, 0);
-    }
+	@Test
+	void testBackstagePassIncreasesQualityByOneIfSellByGreaterThenTen() {
+		final Item backstagePasses = new Item("Backstage passes to a TAFKAL80ETC concert", 11, 20);
+
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(backstagePasses));
+
+		assertEquals(21, backstagePasses.quality);
+	}
+
+	@Test
+	void testBackstagePassIncreasesQualityByTwoIfSellBySmallerThanTen() {
+		final Item backstagePasses = new Item("Backstage passes to a TAFKAL80ETC concert", 6, 20);
+
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(backstagePasses));
+
+		assertEquals(22, backstagePasses.quality);
+	}
+
+	@Test
+	void testBackstagePassIncreasesQualityByThreeIfSellBySmallerThanFive() {
+		final Item backstagePasses = new Item("Backstage passes to a TAFKAL80ETC concert", 5, 20);
+
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(backstagePasses));
+
+		assertEquals(23, backstagePasses.quality);
+	}
+
+	@Test
+	void testBackstagePassLosesValueAfterSellByPasses() {
+		final Item backstagePasses = new Item("Backstage passes to a TAFKAL80ETC concert", 0, 20);
+
+		final GildedRose gildedRose = new GildedRose(this.createItemTypeFactory());
+		gildedRose.updateQuality(this.arrayWith(backstagePasses));
+
+		assertEquals(0, backstagePasses.quality);
+	}
 }
